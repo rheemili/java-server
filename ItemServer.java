@@ -32,7 +32,12 @@ import java.util.Map;
 	 
 	 System.out.println(method + " " +path);
 	 
-	 if(method.equals("GET") && path.equals("/items")) {
+	 if(!method.equals("GET")) {
+		 sendResponse(exchange, 405, "Method Not Allowed");
+		 return;
+	 }
+	 
+	 if (path.equals("/items")) {
 		 StringBuilder sb = new StringBuilder();
 		 for(Map.Entry<String, String> entry : items.entrySet()) {
 			 sb.append(entry.getKey())
@@ -41,6 +46,16 @@ import java.util.Map;
 			 .append("\n");
 		 }
 		 sendResponse(exchange, 200, sb.toString());
+	 } else if (path.matches("/items/\\d+")){
+		 String id = path.substring(7);
+		 String item = items.get(id);
+		 
+		 if(item != null) {
+			 sendResponse(exchange, 200, id + ": " + item);
+		 } else {
+			 sendResponse(exchange, 404, " Item not found");
+		 }
+		 
 	 } else {
 		 sendResponse(exchange, 404, "Not found");
 	 }
