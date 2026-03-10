@@ -6,6 +6,7 @@ import java . io . OutputStream;
 import java . net . InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.InputStream;
 
  public class ItemServer {
      private static Map<String, String> items = new HashMap<>();
@@ -30,13 +31,34 @@ import java.util.Map;
 	 String method = exchange.getRequestMethod();
 	 String path = exchange.getRequestURI().getPath();
 	 
-	 System.out.println(method + " " +path);
+	 System.out.println(method + " " + path);
 	 
-	 if(!method.equals("GET")) {
+	 if(method.equals("GET")) {
+		 handleGet(exchange,path);
+	 } else if (method.equals("POST") && path.equals("/items")) {
+		 handlePost(exchange);
+	 } else {
 		 sendResponse(exchange, 405, "Method Not Allowed");
-		 return;
-	 }
-	 
+	 } 
+ }
+	private void handlePost(HttpExchange exchange) throws IOException {
+		
+		InputStream is = exchange.getRequestBody();
+		String body = new String(is.readAllBytes());
+		is.close();
+		
+		if(body.isEmpty()) {
+			sendResponse(exchange, 400, "Item name required");
+			return;
+		}
+		
+		String id = String.valueOf(nextId++);
+		items.put(id, body.trim());
+		
+		sendResponse(exchange, 201, "Created item " + id + ": " + body.trim());
+	}
+	private void handleGet (HttpExchange exchange, String path) throws IOException {
+	  
 	 if (path.equals("/items")) {
 		 StringBuilder sb = new StringBuilder();
 		 for(Map.Entry<String, String> entry : items.entrySet()) {
@@ -59,7 +81,6 @@ import java.util.Map;
 	 } else {
 		 sendResponse(exchange, 404, "Not found");
 	 }
-	 
  }
 	private void sendResponse ( HttpExchange exchange , int code ,
  String body ) throws IOException {
