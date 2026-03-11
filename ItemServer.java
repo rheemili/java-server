@@ -48,47 +48,61 @@ import java.io.InputStream;
 		is.close();
 		
 		if(body.isEmpty()) {
-			sendResponse(exchange, 400, "Item name required");
+			sendResponse(exchange, 400, "{\"error\": \"Item name required\"}");
 			return;
 		}
 		
 		String id = String.valueOf(nextId++);
-		items.put(id, body.trim());
+		String name = body.trim();
+		items.put(id, name);
 		
-		sendResponse(exchange, 201, "Created item " + id + ": " + body.trim());
+		String json = "{\"id\": \"" + id + "\", \"name\": \"" + name + "\"}";
+		sendResponse(exchange, 201, json);
 	}
 	private void handleGet (HttpExchange exchange, String path) throws IOException {
 	  
 	 if (path.equals("/items")) {
 		 StringBuilder sb = new StringBuilder();
+		 sb.append("[\n");
+		 boolean first = true;
 		 for(Map.Entry<String, String> entry : items.entrySet()) {
-			 sb.append(entry.getKey())
-			 .append(": ")
+			 if(!first) {
+				 sb.append(", \n");
+			 }
+			 sb.append("  {\"id\": \"")
+			 .append(entry.getKey())
+			 .append("\", \"name\": \"")
 			 .append(entry.getValue())
-			 .append("\n");
+			 .append("\"}");
+			first = false;
 		 }
+	 sb.append("\n]");
 		 sendResponse(exchange, 200, sb.toString());
 	 } else if (path.matches("/items/\\d+")){
 		 String id = path.substring(7);
 		 String item = items.get(id);
 		 
 		 if(item != null) {
-			 sendResponse(exchange, 200, id + ": " + item);
+			 String json = "{\"id\": \"" + id + "\", \"name\": \"" + item + "\"}";
+			 sendResponse(exchange, 200, json);
 		 } else {
-			 sendResponse(exchange, 404, " Item not found");
+			 sendResponse(exchange, 404, "{\"error\": \"Item not found\"}");
 		 }
 		 
 	 } else {
 		 sendResponse(exchange, 404, "Not found");
 	 }
  }
-	private void sendResponse ( HttpExchange exchange , int code ,
- String body ) throws IOException {
- byte [] bytes = body . getBytes () ;
- exchange . sendResponseHeaders ( code , bytes . length ) ;
- OutputStream os = exchange . getResponseBody () ;
- os . write ( bytes ) ;
- os . close () ;
-}
- }
+
+private void sendResponse ( HttpExchange exchange , int code ,String body )
+	throws IOException {
+		exchange.getResponseHeaders().set("Content-Type", "application/json");
+		
+		byte[] bytes = body . getBytes ();
+		exchange .sendResponseHeaders( code , bytes.length );
+		OutputStream os = exchange.getResponseBody();
+		os.write( bytes );
+		os.close();
+		}
+	}
  }
