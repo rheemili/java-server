@@ -1,0 +1,9 @@
+public class Palindrome1{
+		public static boolean isPalindromeStack(String input) {
+				
+				
+				String holder1 = input;
+				
+		}
+
+}

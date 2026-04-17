@@ -111,9 +111,9 @@ private void sendResponse ( HttpExchange exchange , int code ,String body )
 		public void handle(HttpExchange exchange)
 			throws IOException {
 				String response = "ok";
-				exchange.sendResponseHeaders(200, reponse.length());
+				exchange.sendResponseHeaders(200, response.length());
 				OutputStream os = exchange.getResponseBody();
-				os.write(reponse.getBytes());
+				os.write(response.getBytes());
 				os.close();
 			}
 	}
