@@ -17,12 +17,13 @@ import java.io.InputStream;
 	 items.put("3", "Mouse");
 	 nextId =4;
  HttpServer server = HttpServer . create (
- new InetSocketAddress (8000) , 0
+ new InetSocketAddress (9006) , 0
  ) ;
 
  server . createContext ( "/items" , new ItemsHandler () ) ;
  server . start () ;
- System . out . println ( " Server running on http :// localhost :8000 " ) ;
+ System . out . println ( " Server running on http :// localhost :9006 " ) ;
+ server.createContext("/health", new HealthHandler());
  }
 
  static class ItemsHandler implements HttpHandler {
@@ -104,5 +105,16 @@ private void sendResponse ( HttpExchange exchange , int code ,String body )
 		os.write( bytes );
 		os.close();
 		}
+	}
+	static class HealthHandler implements HttpHandler {
+		@Override
+		public void handle(HttpExchange exchange)
+			throws IOException {
+				String response = "ok";
+				exchange.sendResponseHeaders(200, reponse.length());
+				OutputStream os = exchange.getResponseBody();
+				os.write(reponse.getBytes());
+				os.close();
+			}
 	}
  }
